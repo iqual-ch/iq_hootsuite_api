@@ -1,0 +1,4 @@
+administer iq hootsuite api:
+  title: 'Administer Hootsuite API settings'
+  description: 'Configure Hootsuite API credentials and endpoint settings.'
+  restrict access: true

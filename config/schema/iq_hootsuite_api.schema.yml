@@ -1,0 +1,41 @@
+iq_hootsuite_api.settings:
+  type: config_object
+  label: 'IQ Hootsuite API settings'
+  mapping:
+    client_id:
+      type: string
+      label: 'Hootsuite Client ID'
+    client_secret:
+      type: string
+      label: 'Hootsuite Client Secret'
+    url_auth_endpoint:
+      type: string
+      label: 'OAuth2 Authorize endpoint'
+    url_token_endpoint:
+      type: string
+      label: 'OAuth2 Token endpoint'
+    url_api_base:
+      type: string
+      label: 'API Base URL'
+    api_endpoints:
+      type: mapping
+      label: 'API Endpoints'
+      mapping:
+        me:
+          type: string
+          label: 'Me endpoint'
+        social_profiles:
+          type: string
+          label: 'Social profiles endpoint'
+        messages:
+          type: string
+          label: 'Messages endpoint'
+        media:
+          type: string
+          label: 'Media endpoint'
+        members:
+          type: string
+          label: 'Members endpoint'
+        organizations:
+          type: string
+          label: 'Organizations endpoint'

@@ -1,0 +1,5 @@
+iq_hootsuite_api.settings:
+  title: 'Hootsuite API Settings'
+  description: 'Configure Hootsuite API client credentials and endpoints.'
+  route_name: iq_hootsuite_api.settings
+  parent: system.admin_config_services

@@ -1,0 +1,6 @@
+name: 'IQ Hootsuite API'
+type: module
+description: 'Provides integration with the Hootsuite REST API for scheduling messages, managing social profiles, and more.'
+package: 'Custom'
+core_version_requirement: ^10 || ^11
+configure: iq_hootsuite_api.settings

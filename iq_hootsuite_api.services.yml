@@ -1,0 +1,9 @@
+services:
+  iq_hootsuite_api.client:
+    class: Drupal\iq_hootsuite_api\Service\HootsuiteApiClient
+    arguments:
+      - '@config.factory'
+      - '@logger.factory'
+      - '@http_client'
+      - '@messenger'
+      - '@state'

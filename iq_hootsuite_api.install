@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the IQ Hootsuite API module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function iq_hootsuite_api_uninstall() {
+  // Clean up state entries when the module is uninstalled.
+  \Drupal::state()->delete('iq_hootsuite_api.access_token');
+  \Drupal::state()->delete('iq_hootsuite_api.refresh_token');
+}
