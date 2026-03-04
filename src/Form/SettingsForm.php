@@ -33,19 +33,15 @@ class SettingsForm extends ConfigFormBase {
   /**
    * Constructs a SettingsForm object.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\iq_hootsuite_api\Service\HootsuiteApiClientInterface $hootsuite_api_client
    *   The Hootsuite API client.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
    */
   public function __construct(
-    ConfigFactoryInterface $config_factory,
     HootsuiteApiClientInterface $hootsuite_api_client,
     StateInterface $state,
   ) {
-    parent::__construct($config_factory);
     $this->hootsuiteApiClient = $hootsuite_api_client;
     $this->state = $state;
   }
@@ -55,7 +51,6 @@ class SettingsForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('config.factory'),
       $container->get('iq_hootsuite_api.client'),
       $container->get('state'),
     );
