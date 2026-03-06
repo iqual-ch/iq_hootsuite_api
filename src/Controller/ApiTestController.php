@@ -111,6 +111,7 @@ class ApiTestController extends ControllerBase {
     $url = $data['url'] ?? '';
     $query = $data['query'] ?? [];
     $body = $data['body'] ?? NULL;
+    $bodyType = $data['body_type'] ?? 'json';
     $customHeaders = $data['headers'] ?? [];
     $useAuth = $data['use_auth'] ?? TRUE;
 
@@ -161,8 +162,16 @@ class ApiTestController extends ControllerBase {
 
     $sentBody = NULL;
     if ($body !== NULL && in_array($method, ['POST', 'PUT', 'PATCH'])) {
-      $sentBody = is_string($body) ? $body : json_encode($body);
-      $requestOptions[RequestOptions::BODY] = $sentBody;
+      if ($bodyType === 'form' && is_array($body)) {
+        // Send as application/x-www-form-urlencoded.
+        $requestOptions[RequestOptions::FORM_PARAMS] = $body;
+        $sentBody = http_build_query($body);
+      }
+      else {
+        // Send as JSON body.
+        $sentBody = is_string($body) ? $body : json_encode($body);
+        $requestOptions[RequestOptions::BODY] = $sentBody;
+      }
     }
 
     // Build the full URL with query string for display.
@@ -177,6 +186,7 @@ class ApiTestController extends ControllerBase {
       'url' => $fullUrl,
       'headers' => $headers,
       'body' => $sentBody,
+      'body_type' => $bodyType,
     ];
 
     $httpClient = $this->hootsuiteApiClient->getHttpClient();
@@ -369,6 +379,7 @@ class ApiTestController extends ControllerBase {
         'refresh_token' => 'REFRESH_TOKEN_HERE',
         'scope' => 'offline',
       ],
+      'body_type' => 'form',
       'headers' => [
         'Authorization' => 'Basic ' . base64_encode($clientId . ':' . $clientSecret),
         'Content-Type' => 'application/x-www-form-urlencoded',

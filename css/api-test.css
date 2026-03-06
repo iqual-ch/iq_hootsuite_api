@@ -190,6 +190,25 @@
   padding: 12px 0;
 }
 
+/* Body type toggle */
+.body-type-toggle {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.body-type-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.body-type-toggle small {
+  color: #888;
+}
+
 .panel-hint {
   font-size: 12px;
   color: #888;

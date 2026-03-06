@@ -130,7 +130,6 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
         RequestOptions::FORM_PARAMS => [
           'refresh_token' => $refreshToken,
           'grant_type' => 'refresh_token',
-          'scope' => 'offline',
         ],
       ];
 

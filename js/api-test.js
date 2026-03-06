@@ -28,6 +28,8 @@
       var bodyTextarea = document.getElementById('api-body');
       var headersTextarea = document.getElementById('api-headers');
       var useAuthCheckbox = document.getElementById('api-use-auth');
+      var bodyTypeRadios = document.querySelectorAll('input[name="body-type"]');
+      var bodyHint = document.getElementById('body-hint');
       var executeBtn = document.getElementById('api-execute');
       var responseSection = document.getElementById('response-section');
       var responseStatus = document.getElementById('response-status');
@@ -223,7 +225,10 @@
             bodyTextarea.value = '';
           }
 
-          // Clear custom headers.
+          // Body type (json or form).
+          setBodyType(preset.body_type || 'json');
+
+          // Custom headers.
           if (preset.headers) {
             headersTextarea.value = JSON.stringify(preset.headers, null, 2);
             setKvData(headersKvEditor, preset.headers);
@@ -260,6 +265,30 @@
           p.style.display = p.id === 'panel-' + panelName ? '' : 'none';
         });
       }
+
+      function getBodyType() {
+        var checked = document.querySelector('input[name="body-type"]:checked');
+        return checked ? checked.value : 'json';
+      }
+
+      function setBodyType(type) {
+        bodyTypeRadios.forEach(function (r) {
+          r.checked = r.value === type;
+        });
+        updateBodyHint();
+      }
+
+      function updateBodyHint() {
+        if (bodyHint) {
+          bodyHint.textContent = getBodyType() === 'form'
+            ? 'Key/value pairs sent as application/x-www-form-urlencoded.'
+            : 'JSON body for POST, PUT, and PATCH requests.';
+        }
+      }
+
+      bodyTypeRadios.forEach(function (r) {
+        r.addEventListener('change', updateBodyHint);
+      });
 
       // -----------------------------------------------------------------
       // Execute request.
@@ -330,6 +359,7 @@
           url: url,
           query: query,
           body: body,
+          body_type: getBodyType(),
           headers: headers,
           use_auth: useAuthCheckbox.checked
         };
@@ -457,7 +487,8 @@
             });
           }
           if (result.request.body) {
-            reqDisplay += '\n--- Body ---\n';
+            var bodyLabel = result.request.body_type === 'form' ? '--- Body (form-urlencoded) ---' : '--- Body (JSON) ---';
+            reqDisplay += '\n' + bodyLabel + '\n';
             try {
               var parsed = typeof result.request.body === 'string' ? JSON.parse(result.request.body) : result.request.body;
               reqDisplay += JSON.stringify(parsed, null, 2);

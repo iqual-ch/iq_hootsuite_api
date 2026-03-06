@@ -82,12 +82,22 @@
       </div>
 
       <div class="panel-content" id="panel-body" style="display:none">
+        <div class="body-type-toggle">
+          <label>
+            <input type="radio" name="body-type" value="json" checked />
+            JSON body
+          </label>
+          <label>
+            <input type="radio" name="body-type" value="form" />
+            Form params <small>(x-www-form-urlencoded)</small>
+          </label>
+        </div>
         <textarea id="api-body" rows="10" placeholder='{
   "text": "Hello!",
   "socialProfileIds": ["123"],
   "scheduledSendTime": "2025-01-01T14:00:00Z"
 }'></textarea>
-        <div class="panel-hint">JSON body for POST, PUT, and PATCH requests.</div>
+        <div class="panel-hint" id="body-hint">JSON body for POST, PUT, and PATCH requests.</div>
       </div>
 
       <div class="panel-content" id="panel-headers" style="display:none">
