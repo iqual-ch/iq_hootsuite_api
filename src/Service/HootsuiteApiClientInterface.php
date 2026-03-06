@@ -55,7 +55,8 @@ interface HootsuiteApiClientInterface {
    * Gets the full URL for a named API endpoint.
    *
    * @param string $endpoint_name
-   *   The endpoint name as configured (e.g. 'me', 'messages').
+   *   The endpoint name (e.g. 'me', 'messages'). Must match a key in
+   *   HootsuiteApiClient::ENDPOINTS.
    *
    * @return string
    *   The full URL for the endpoint.

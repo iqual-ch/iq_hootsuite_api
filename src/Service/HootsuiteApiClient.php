@@ -25,6 +25,23 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
   use StringTranslationTrait;
 
   /**
+   * The API base URL.
+   */
+  const API_BASE_URL = 'https://platform.hootsuite.com';
+
+  /**
+   * API endpoint paths keyed by name.
+   */
+  const ENDPOINTS = [
+    'me' => '/v1/me',
+    'social_profiles' => '/v1/socialProfiles',
+    'messages' => '/v1/messages',
+    'media' => '/v1/media',
+    'members' => '/v1/members',
+    'organizations' => '/v1/organizations',
+  ];
+
+  /**
    * The logger channel.
    *
    * @var \Drupal\Core\Logger\LoggerChannelInterface
@@ -201,10 +218,8 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
    * {@inheritdoc}
    */
   public function getEndpointUrl(string $endpoint_name): string {
-    $base = rtrim($this->config->get('url_api_base'), '/');
-    $endpoints = $this->config->get('api_endpoints') ?? [];
-    $path = $endpoints[$endpoint_name] ?? '';
-    return $base . $path;
+    $path = self::ENDPOINTS[$endpoint_name] ?? '';
+    return self::API_BASE_URL . $path;
   }
 
   /**

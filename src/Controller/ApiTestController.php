@@ -6,6 +6,7 @@ use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Url;
+use Drupal\iq_hootsuite_api\Service\HootsuiteApiClient;
 use Drupal\iq_hootsuite_api\Service\HootsuiteApiClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
@@ -54,9 +55,8 @@ class ApiTestController extends ControllerBase {
    *   A render array for the test console.
    */
   public function testPage(): array {
-    $config = $this->config('iq_hootsuite_api.settings');
-    $baseUrl = rtrim($config->get('url_api_base'), '/');
-    $endpoints = $config->get('api_endpoints') ?? [];
+    $baseUrl = HootsuiteApiClient::API_BASE_URL;
+    $endpoints = HootsuiteApiClient::ENDPOINTS;
 
     $presets = $this->getEndpointPresets($baseUrl, $endpoints);
     $hasToken = !empty($this->state->get('iq_hootsuite_api.access_token'));
@@ -159,9 +159,25 @@ class ApiTestController extends ControllerBase {
       $requestOptions[RequestOptions::QUERY] = $query;
     }
 
+    $sentBody = NULL;
     if ($body !== NULL && in_array($method, ['POST', 'PUT', 'PATCH'])) {
-      $requestOptions[RequestOptions::BODY] = is_string($body) ? $body : json_encode($body);
+      $sentBody = is_string($body) ? $body : json_encode($body);
+      $requestOptions[RequestOptions::BODY] = $sentBody;
     }
+
+    // Build the full URL with query string for display.
+    $fullUrl = $url;
+    if (!empty($query)) {
+      $fullUrl .= '?' . http_build_query($query);
+    }
+
+    // Capture the sent request details.
+    $sentRequest = [
+      'method' => $method,
+      'url' => $fullUrl,
+      'headers' => $headers,
+      'body' => $sentBody,
+    ];
 
     $httpClient = $this->hootsuiteApiClient->getHttpClient();
     $startTime = microtime(TRUE);
@@ -186,6 +202,7 @@ class ApiTestController extends ControllerBase {
         'body_raw' => $responseBody,
         'time_ms' => $elapsed,
         'is_json' => $decodedBody !== NULL,
+        'request' => $sentRequest,
       ]);
     }
     catch (GuzzleException $e) {
@@ -216,6 +233,7 @@ class ApiTestController extends ControllerBase {
         'body_raw' => $responseBody,
         'time_ms' => $elapsed,
         'is_json' => $decodedBody !== NULL,
+        'request' => $sentRequest,
       ]);
     }
   }
@@ -334,6 +352,30 @@ class ApiTestController extends ControllerBase {
         'description' => 'List organizations.',
       ];
     }
+
+    // Token endpoint (OAuth2).
+    $config = $this->config('iq_hootsuite_api.settings');
+    $tokenUrl = $config->get('url_token_endpoint') ?: 'https://platform.hootsuite.com/oauth2/token';
+    $clientId = $config->get('client_id') ?: '';
+    $clientSecret = $config->get('client_secret') ?: '';
+
+    $presets[] = [
+      'name' => 'Refresh Token',
+      'method' => 'POST',
+      'url' => $tokenUrl,
+      'query' => NULL,
+      'body' => [
+        'grant_type' => 'refresh_token',
+        'refresh_token' => 'REFRESH_TOKEN_HERE',
+        'scope' => 'offline',
+      ],
+      'headers' => [
+        'Authorization' => 'Basic ' . base64_encode($clientId . ':' . $clientSecret),
+        'Content-Type' => 'application/x-www-form-urlencoded',
+      ],
+      'use_auth' => FALSE,
+      'description' => 'Exchange a refresh token for a new access token (OAuth2 token endpoint).',
+    ];
 
     return $presets;
   }

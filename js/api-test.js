@@ -34,6 +34,7 @@
       var responseTime = document.getElementById('response-time');
       var responseHeaders = document.getElementById('response-headers');
       var responseBody = document.getElementById('response-body');
+      var responseRequest = document.getElementById('response-request');
       var loadingOverlay = document.getElementById('loading-overlay');
 
       // KV editors.
@@ -223,8 +224,22 @@
           }
 
           // Clear custom headers.
-          headersTextarea.value = '';
-          setKvData(headersKvEditor, {});
+          if (preset.headers) {
+            headersTextarea.value = JSON.stringify(preset.headers, null, 2);
+            setKvData(headersKvEditor, preset.headers);
+          }
+          else {
+            headersTextarea.value = '';
+            setKvData(headersKvEditor, {});
+          }
+
+          // Auth checkbox.
+          if (preset.use_auth !== undefined) {
+            useAuthCheckbox.checked = preset.use_auth;
+          }
+          else {
+            useAuthCheckbox.checked = true;
+          }
 
           // Auto-switch to body tab for POST/PUT/PATCH.
           if (['POST', 'PUT', 'PATCH'].indexOf(preset.method) !== -1) {
@@ -423,6 +438,40 @@
         else {
           responseBody.innerHTML = '<span class="json-null">(empty response)</span>';
         }
+
+        // Request sent.
+        if (result.request) {
+          var reqDisplay = result.request.method + ' ' + result.request.url + '\n\n';
+          reqDisplay += '--- Headers ---\n';
+          if (result.request.headers && typeof result.request.headers === 'object') {
+            Object.keys(result.request.headers).forEach(function (key) {
+              var val = result.request.headers[key];
+              // Mask Bearer token for readability (show first/last 6 chars).
+              if (key === 'Authorization' && typeof val === 'string' && val.indexOf('Bearer ') === 0) {
+                var token = val.substring(7);
+                if (token.length > 12) {
+                  val = 'Bearer ' + token.substring(0, 6) + '...' + token.substring(token.length - 6);
+                }
+              }
+              reqDisplay += key + ': ' + val + '\n';
+            });
+          }
+          if (result.request.body) {
+            reqDisplay += '\n--- Body ---\n';
+            try {
+              var parsed = typeof result.request.body === 'string' ? JSON.parse(result.request.body) : result.request.body;
+              reqDisplay += JSON.stringify(parsed, null, 2);
+            }
+            catch (e) {
+              reqDisplay += result.request.body;
+            }
+          }
+          responseRequest.innerHTML = '';
+          responseRequest.textContent = reqDisplay;
+        }
+        else {
+          responseRequest.innerHTML = '<span class="json-null">(no request data)</span>';
+        }
       }
 
       // -----------------------------------------------------------------
@@ -458,6 +507,7 @@
       // -----------------------------------------------------------------
       var copyBodyBtn = document.getElementById('copy-body');
       var copyHeadersBtn = document.getElementById('copy-headers');
+      var copyRequestBtn = document.getElementById('copy-request');
 
       if (copyBodyBtn) {
         copyBodyBtn.addEventListener('click', function () {
@@ -467,6 +517,11 @@
       if (copyHeadersBtn) {
         copyHeadersBtn.addEventListener('click', function () {
           copyToClipboard(responseHeaders.textContent, copyHeadersBtn);
+        });
+      }
+      if (copyRequestBtn) {
+        copyRequestBtn.addEventListener('click', function () {
+          copyToClipboard(responseRequest.textContent, copyRequestBtn);
         });
       }
 

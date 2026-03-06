@@ -14,28 +14,3 @@ iq_hootsuite_api.settings:
     url_token_endpoint:
       type: string
       label: 'OAuth2 Token endpoint'
-    url_api_base:
-      type: string
-      label: 'API Base URL'
-    api_endpoints:
-      type: mapping
-      label: 'API Endpoints'
-      mapping:
-        me:
-          type: string
-          label: 'Me endpoint'
-        social_profiles:
-          type: string
-          label: 'Social profiles endpoint'
-        messages:
-          type: string
-          label: 'Messages endpoint'
-        media:
-          type: string
-          label: 'Media endpoint'
-        members:
-          type: string
-          label: 'Members endpoint'
-        organizations:
-          type: string
-          label: 'Organizations endpoint'

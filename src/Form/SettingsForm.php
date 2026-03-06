@@ -160,70 +160,6 @@ class SettingsForm extends ConfigFormBase {
       '#description' => $this->t('Default: https://platform.hootsuite.com/oauth2/token'),
     ];
 
-    // API endpoints fieldset.
-    $form['api_settings'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('API Settings'),
-    ];
-
-    $form['api_settings']['url_api_base'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('API Base URL'),
-      '#default_value' => $config->get('url_api_base'),
-      '#required' => TRUE,
-      '#description' => $this->t('Default: https://platform.hootsuite.com'),
-    ];
-
-    $form['api_endpoints'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('API Endpoints'),
-      '#description' => $this->t('Relative paths appended to the API Base URL.'),
-    ];
-
-    $endpoints = $config->get('api_endpoints') ?? [];
-
-    $form['api_endpoints']['endpoint_me'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Me'),
-      '#default_value' => $endpoints['me'] ?? '/v1/me',
-      '#required' => TRUE,
-    ];
-
-    $form['api_endpoints']['endpoint_social_profiles'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Social Profiles'),
-      '#default_value' => $endpoints['social_profiles'] ?? '/v1/socialProfiles',
-      '#required' => TRUE,
-    ];
-
-    $form['api_endpoints']['endpoint_messages'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Messages'),
-      '#default_value' => $endpoints['messages'] ?? '/v1/messages',
-      '#required' => TRUE,
-    ];
-
-    $form['api_endpoints']['endpoint_media'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Media'),
-      '#default_value' => $endpoints['media'] ?? '/v1/media',
-      '#required' => TRUE,
-    ];
-
-    $form['api_endpoints']['endpoint_members'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Members'),
-      '#default_value' => $endpoints['members'] ?? '/v1/members',
-      '#required' => TRUE,
-    ];
-
-    $form['api_endpoints']['endpoint_organizations'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Organizations'),
-      '#default_value' => $endpoints['organizations'] ?? '/v1/organizations',
-      '#required' => TRUE,
-    ];
-
     return parent::buildForm($form, $form_state);
   }
 
@@ -236,15 +172,6 @@ class SettingsForm extends ConfigFormBase {
       ->set('client_secret', $form_state->getValue('client_secret'))
       ->set('url_auth_endpoint', $form_state->getValue('url_auth_endpoint'))
       ->set('url_token_endpoint', $form_state->getValue('url_token_endpoint'))
-      ->set('url_api_base', $form_state->getValue('url_api_base'))
-      ->set('api_endpoints', [
-        'me' => $form_state->getValue('endpoint_me'),
-        'social_profiles' => $form_state->getValue('endpoint_social_profiles'),
-        'messages' => $form_state->getValue('endpoint_messages'),
-        'media' => $form_state->getValue('endpoint_media'),
-        'members' => $form_state->getValue('endpoint_members'),
-        'organizations' => $form_state->getValue('endpoint_organizations'),
-      ])
       ->save();
 
     parent::submitForm($form, $form_state);

@@ -126,6 +126,7 @@
     <div class="response-tabs">
       <button type="button" class="resp-tab is-active" data-resp-panel="resp-body">Body</button>
       <button type="button" class="resp-tab" data-resp-panel="resp-headers">Headers</button>
+      <button type="button" class="resp-tab" data-resp-panel="resp-request">Request Sent</button>
     </div>
 
     <div class="resp-panel" id="resp-body">
@@ -139,6 +140,13 @@
       <div class="response-body-container">
         <button type="button" class="copy-btn" id="copy-headers" title="Copy to clipboard">Copy</button>
         <pre id="response-headers"></pre>
+      </div>
+    </div>
+
+    <div class="resp-panel" id="resp-request" style="display:none">
+      <div class="response-body-container">
+        <button type="button" class="copy-btn" id="copy-request" title="Copy to clipboard">Copy</button>
+        <pre id="response-request"></pre>
       </div>
     </div>
   </fieldset>
