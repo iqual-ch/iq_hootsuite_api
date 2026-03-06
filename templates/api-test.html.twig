@@ -1,0 +1,152 @@
+{#
+/**
+ * @file
+ * Template for the Hootsuite API Test Console.
+ *
+ * Available variables:
+ * - presets: Array of endpoint preset configurations.
+ * - has_token: Boolean indicating if an access token is available.
+ * - auth_url: The OAuth2 authorization URL.
+ * - base_url: The API base URL.
+ */
+#}
+<div class="api-test-console">
+
+  {# Authentication status #}
+  <div class="api-test-auth-status {{ has_token ? 'auth-active' : 'auth-inactive' }}">
+    {% if has_token %}
+      <span class="auth-icon">&#10003;</span>
+      Authentication token is available.
+    {% else %}
+      <span class="auth-icon">&#9888;</span>
+      No authentication token.
+      <a href="{{ auth_url }}" class="auth-link">Authenticate with Hootsuite</a>
+    {% endif %}
+  </div>
+
+  {# Endpoint presets #}
+  <fieldset class="api-test-section">
+    <legend>Endpoint Presets</legend>
+    <div class="preset-buttons">
+      {% for preset in presets %}
+        <button type="button" class="preset-btn" data-index="{{ loop.index0 }}" title="{{ preset.description }}">
+          <span class="method-badge method-{{ preset.method|lower }}">{{ preset.method }}</span>
+          {{ preset.name }}
+        </button>
+      {% endfor %}
+      <button type="button" class="preset-btn preset-custom" data-index="-1" title="Enter a custom endpoint">
+        <span class="method-badge method-custom">&#9998;</span>
+        Custom
+      </button>
+    </div>
+  </fieldset>
+
+  {# Request builder #}
+  <fieldset class="api-test-section">
+    <legend>Request</legend>
+
+    <div class="request-line">
+      <select id="api-method" aria-label="HTTP Method">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="PATCH">PATCH</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+      <input type="text" id="api-url" placeholder="https://platform.hootsuite.com/v1/..." aria-label="Request URL" />
+      <button type="button" id="api-execute" class="button button--primary">
+        Execute
+      </button>
+    </div>
+
+    <div class="request-panels">
+      <div class="panel-tabs">
+        <button type="button" class="panel-tab is-active" data-panel="query">Query Params</button>
+        <button type="button" class="panel-tab" data-panel="body">Body</button>
+        <button type="button" class="panel-tab" data-panel="headers">Headers</button>
+      </div>
+
+      <div class="panel-content" id="panel-query">
+        <div class="kv-editor" id="query-kv-editor">
+          <div class="kv-row kv-template" style="display:none">
+            <input type="text" class="kv-key" placeholder="key" />
+            <input type="text" class="kv-value" placeholder="value" />
+            <button type="button" class="kv-remove" title="Remove">&times;</button>
+          </div>
+        </div>
+        <button type="button" class="kv-add" data-target="query-kv-editor">+ Add parameter</button>
+        <details class="raw-toggle">
+          <summary>Edit as raw JSON</summary>
+          <textarea id="api-query" rows="4" placeholder='{"key": "value"}'></textarea>
+        </details>
+      </div>
+
+      <div class="panel-content" id="panel-body" style="display:none">
+        <textarea id="api-body" rows="10" placeholder='{
+  "text": "Hello!",
+  "socialProfileIds": ["123"],
+  "scheduledSendTime": "2025-01-01T14:00:00Z"
+}'></textarea>
+        <div class="panel-hint">JSON body for POST, PUT, and PATCH requests.</div>
+      </div>
+
+      <div class="panel-content" id="panel-headers" style="display:none">
+        <div class="kv-editor" id="headers-kv-editor">
+          <div class="kv-row kv-template" style="display:none">
+            <input type="text" class="kv-key" placeholder="Header-Name" />
+            <input type="text" class="kv-value" placeholder="value" />
+            <button type="button" class="kv-remove" title="Remove">&times;</button>
+          </div>
+        </div>
+        <button type="button" class="kv-add" data-target="headers-kv-editor">+ Add header</button>
+        <details class="raw-toggle">
+          <summary>Edit as raw JSON</summary>
+          <textarea id="api-headers" rows="4" placeholder='{"X-Custom-Header": "value"}'></textarea>
+        </details>
+      </div>
+    </div>
+
+    <div class="request-options">
+      <label class="auth-option">
+        <input type="checkbox" id="api-use-auth" checked />
+        Include authentication (Bearer token)
+      </label>
+    </div>
+  </fieldset>
+
+  {# Response viewer #}
+  <fieldset class="api-test-section api-test-response" id="response-section" style="display:none">
+    <legend>Response</legend>
+
+    <div class="response-meta">
+      <span id="response-status"></span>
+      <span id="response-time"></span>
+    </div>
+
+    <div class="response-tabs">
+      <button type="button" class="resp-tab is-active" data-resp-panel="resp-body">Body</button>
+      <button type="button" class="resp-tab" data-resp-panel="resp-headers">Headers</button>
+    </div>
+
+    <div class="resp-panel" id="resp-body">
+      <div class="response-body-container">
+        <button type="button" class="copy-btn" id="copy-body" title="Copy to clipboard">Copy</button>
+        <pre id="response-body"></pre>
+      </div>
+    </div>
+
+    <div class="resp-panel" id="resp-headers" style="display:none">
+      <div class="response-body-container">
+        <button type="button" class="copy-btn" id="copy-headers" title="Copy to clipboard">Copy</button>
+        <pre id="response-headers"></pre>
+      </div>
+    </div>
+  </fieldset>
+
+  {# Loading overlay #}
+  <div class="api-test-loading" id="loading-overlay" style="display:none">
+    <div class="loading-spinner"></div>
+    <span>Executing request...</span>
+  </div>
+
+</div>

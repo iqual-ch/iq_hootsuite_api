@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for IQ Hootsuite API module.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function iq_hootsuite_api_theme() {
+  return [
+    'iq_hootsuite_api_test' => [
+      'variables' => [
+        'presets' => [],
+        'has_token' => FALSE,
+        'auth_url' => '',
+        'base_url' => '',
+      ],
+      'template' => 'api-test',
+    ],
+  ];
+}

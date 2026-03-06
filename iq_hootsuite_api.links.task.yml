@@ -1,0 +1,10 @@
+iq_hootsuite_api.settings_tab:
+  route_name: iq_hootsuite_api.settings
+  title: 'Settings'
+  base_route: iq_hootsuite_api.settings
+
+iq_hootsuite_api.test_tab:
+  route_name: iq_hootsuite_api.test
+  title: 'API Test Console'
+  base_route: iq_hootsuite_api.settings
+  weight: 10

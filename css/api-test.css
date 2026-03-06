@@ -1,0 +1,459 @@
+/**
+ * @file
+ * Styles for the Hootsuite API Test Console.
+ */
+
+/* Layout */
+.api-test-console {
+  max-width: 1100px;
+  position: relative;
+}
+
+/* Auth status banner */
+.api-test-auth-status {
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-active {
+  background: #e8f5e9;
+  border: 1px solid #66bb6a;
+  color: #2e7d32;
+}
+
+.auth-inactive {
+  background: #fff3e0;
+  border: 1px solid #ffa726;
+  color: #e65100;
+}
+
+.auth-icon {
+  font-size: 18px;
+}
+
+.auth-link {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Sections */
+.api-test-section {
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: #fff;
+}
+
+.api-test-section legend {
+  font-weight: 700;
+  font-size: 15px;
+  padding: 0 6px;
+  color: #333;
+}
+
+/* Preset buttons */
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.preset-btn:hover {
+  border-color: #003ecc;
+  background: #f0f4ff;
+}
+
+.preset-btn.is-active {
+  border-color: #003ecc;
+  background: #e8eeff;
+  box-shadow: 0 0 0 1px #003ecc;
+}
+
+/* Method badges */
+.method-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.method-get { background: #e8f5e9; color: #2e7d32; }
+.method-post { background: #fff3e0; color: #e65100; }
+.method-put { background: #e3f2fd; color: #1565c0; }
+.method-patch { background: #f3e5f5; color: #7b1fa2; }
+.method-delete { background: #ffebee; color: #c62828; }
+.method-custom { background: #f5f5f5; color: #616161; }
+
+/* Request line */
+.request-line {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: stretch;
+}
+
+.request-line select {
+  width: 110px;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.request-line input[type="text"] {
+  flex: 1;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+}
+
+.request-line input[type="text"]:focus {
+  border-color: #003ecc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 62, 204, 0.15);
+}
+
+#api-execute {
+  padding: 8px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* Panel tabs */
+.panel-tabs,
+.response-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 0;
+}
+
+.panel-tab,
+.resp-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.panel-tab:hover,
+.resp-tab:hover {
+  color: #333;
+}
+
+.panel-tab.is-active,
+.resp-tab.is-active {
+  color: #003ecc;
+  border-bottom-color: #003ecc;
+}
+
+/* Panel content */
+.panel-content {
+  padding: 12px 0;
+}
+
+.panel-hint {
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* Textareas */
+.panel-content textarea,
+.raw-toggle textarea {
+  width: 100%;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  padding: 10px 12px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  resize: vertical;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.panel-content textarea:focus,
+.raw-toggle textarea:focus {
+  border-color: #003ecc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 62, 204, 0.15);
+}
+
+/* KV editor */
+.kv-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kv-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kv-row input {
+  flex: 1;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+}
+
+.kv-row input:focus {
+  border-color: #003ecc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 62, 204, 0.15);
+}
+
+.kv-remove {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #999;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.kv-remove:hover {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.kv-add {
+  background: none;
+  border: 1px dashed #bbb;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+  margin-top: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.kv-add:hover {
+  border-color: #003ecc;
+  color: #003ecc;
+}
+
+/* Raw toggle */
+.raw-toggle {
+  margin-top: 8px;
+}
+
+.raw-toggle summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #888;
+  user-select: none;
+}
+
+.raw-toggle summary:hover {
+  color: #333;
+}
+
+.raw-toggle textarea {
+  margin-top: 6px;
+}
+
+/* Auth option */
+.request-options {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.auth-option {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.auth-option input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Response section */
+.response-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+.status-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-redirect {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+#response-time {
+  color: #666;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Response code viewer */
+.response-body-container {
+  position: relative;
+}
+
+#response-body,
+#response-headers {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  max-height: 600px;
+  overflow-y: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* JSON syntax highlighting (dark theme) */
+.json-key { color: #9cdcfe; }
+.json-string { color: #ce9178; }
+.json-number { color: #b5cea8; }
+.json-boolean { color: #569cd6; }
+.json-null { color: #569cd6; font-style: italic; }
+
+/* Copy button */
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  background: #333;
+  color: #ccc;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  z-index: 1;
+  transition: background 0.15s, color 0.15s;
+}
+
+.copy-btn:hover {
+  background: #444;
+  color: #fff;
+}
+
+/* Loading overlay */
+.api-test-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 10000;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #003ecc;
+  border-radius: 50%;
+  animation: api-test-spin 0.8s linear infinite;
+}
+
+@keyframes api-test-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .request-line {
+    flex-direction: column;
+  }
+
+  .request-line select {
+    width: 100%;
+  }
+
+  .preset-buttons {
+    gap: 6px;
+  }
+
+  .preset-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}

@@ -1,0 +1,9 @@
+api_test:
+  css:
+    theme:
+      css/api-test.css: {}
+  js:
+    js/api-test.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
