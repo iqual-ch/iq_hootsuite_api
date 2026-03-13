@@ -245,6 +245,11 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
       'scheduledSendTime' => $scheduled_send_time,
     ], $options);
 
+    // Log body for debugging.
+    $this->logger->debug('Scheduling message with body: @body', [
+      '@body' => print_r($body, TRUE),
+    ]);
+
     return $this->request('POST', $this->getEndpointUrl('messages'), NULL, $body);
   }
 
