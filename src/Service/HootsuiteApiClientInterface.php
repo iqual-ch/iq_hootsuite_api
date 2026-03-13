@@ -153,10 +153,10 @@ interface HootsuiteApiClientInterface {
    * @param \Drupal\file\Entity\File $image
    *   The file to upload.
    *
-   * @return string|null
-   *   The media ID if successful, or NULL on failure.
+   * @return array|null
+   *   The media data as array if successful, or NULL on failure.
    */
-  public function uploadImage(File $image): ?string;
+  public function uploadImage(File $image): ?array;
 
   /**
    * Returns the underlying HTTP client.

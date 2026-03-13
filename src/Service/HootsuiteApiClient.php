@@ -321,7 +321,7 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
   /**
    * {@inheritdoc}
    */
-  public function uploadImage(File $image): ?string {
+  public function uploadImage(File $image): ?array {
     if (!empty($this->images[$image->id()])) {
       return $this->images[$image->id()];
     }
