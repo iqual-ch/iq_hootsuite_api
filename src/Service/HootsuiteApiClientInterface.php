@@ -2,6 +2,7 @@
 
 namespace Drupal\iq_hootsuite_api\Service;
 
+use Drupal\file\Entity\File;
 use GuzzleHttp\ClientInterface;
 
 /**
@@ -145,6 +146,17 @@ interface HootsuiteApiClientInterface {
    *   The decoded response data containing upload URL, or FALSE on failure.
    */
   public function createMediaUploadUrl(int $size_bytes, string $mime_type): mixed;
+
+  /**
+   * Uploads an image to Hootsuite.
+   *
+   * @param \Drupal\file\Entity\File $image
+   *   The file to upload.
+   *
+   * @return string|null
+   *   The media ID if successful, or NULL on failure.
+   */
+  public function uploadImage(File $image): ?string;
 
   /**
    * Returns the underlying HTTP client.

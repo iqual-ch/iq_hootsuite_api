@@ -9,6 +9,7 @@ use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\file\Entity\File;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
@@ -40,6 +41,15 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
     'members' => '/v1/members',
     'organizations' => '/v1/organizations',
   ];
+
+  /**
+   * Cache of uploaded images to avoid duplicate uploads.
+   *
+   * Keyed by Drupal file ID, value is Hootsuite media ID.
+   *
+   * @var array
+   */
+  protected array $images = [];
 
   /**
    * The logger channel.
@@ -291,6 +301,97 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
     ];
 
     return $this->request('POST', $this->getEndpointUrl('media'), NULL, $body);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function uploadImage(File $image): ?string {
+    if (!empty($this->images[$image->id()])) {
+      return $this->images[$image->id()];
+    }
+    else {
+      $id = $this->registerImage($image);
+      if ($id) {
+        $this->images[$image->id()] = $id;
+        return $id;
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Register image with hootsuite.
+   *
+   * @param \Drupal\file\Entity\File $image
+   *   The file to register.
+   */
+  protected function registerImage(File $image) {
+    $body = [
+      'mimeType' => $image->getMimeType(),
+      'sizeBytes' => filesize($image->getFileUri()),
+    ];
+    $response = $this->request('post', $this->config->get('url_post_media_endpoint'), NULL, $body);
+    if (empty($response)) {
+      return FALSE;
+    }
+    $data = Json::decode($response);
+    if (!empty($data['data']) && $data = $data['data']) {
+      $id = $data['id'];
+      if ($this->uploadToAws($image, $data['uploadUrl'])) {
+        $i = 0;
+        do {
+          sleep(1);
+          $i++;
+          if ($i > 20) {
+            $this->messenger->addMessage('Image could not be uploaded, waited for 20 seconds', 'warning');
+            $this->logger->warning('Timeout on ready state for image with id @id.', ['@id' => $id]);
+            return FALSE;
+          }
+          $response = $this->request('get', $this->config->get('url_post_media_endpoint') . '/' . $id);
+          if (empty($response)) {
+            return FALSE;
+          }
+          $data = Json::decode($response->getContents());
+          if (!empty($data['data']['state'])) {
+            $state = $data['data']['state'];
+          }
+          else {
+            $state = '';
+          }
+        } while ($state != 'READY');
+        $this->logger->notice('Ready state for image id @id.', ['@id' => $id]);
+        return $id;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Upload an image to aws.
+   *
+   * @param \Drupal\file\Entity\File $image
+   *   The file to upload.
+   * @param string $url
+   *   The endpoint to send it to.
+   */
+  protected function uploadToAws(File $image, string $url) {
+    $requestOptions = [
+      RequestOptions::HEADERS => [
+        'Content-Type' => $image->getMimeType(),
+        'Content-Length' => filesize($image->getFileUri()),
+      ],
+      RequestOptions::BODY => fopen($image->getFileUri(), 'r'),
+    ];
+    try {
+      $this->request('put', $url, $requestOptions);
+      return TRUE;
+    }
+    catch (\Exception $e) {
+      $this->messenger->addMessage($e->getMessage());
+      return FALSE;
+    }
+    return TRUE;
   }
 
   /**
