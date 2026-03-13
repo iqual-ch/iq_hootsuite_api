@@ -4,6 +4,7 @@ namespace Drupal\iq_hootsuite_api\Service;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerInterface;
@@ -29,6 +30,17 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
    * The API base URL.
    */
   const API_BASE_URL = 'https://platform.hootsuite.com';
+
+  /**
+   * Supported MIME types for Hootsuite media uploads.
+   */
+  const SUPPORTED_MIME_TYPES = [
+    'video/mp4',
+    'image/gif',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+  ];
 
   /**
    * API endpoint paths keyed by name.
@@ -78,6 +90,8 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
    *   The messenger service.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   The file system service.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -85,6 +99,7 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
     protected ClientInterface $httpClient,
     protected MessengerInterface $messenger,
     protected StateInterface $state,
+    protected FileSystemInterface $fileSystem,
   ) {
     $this->config = $config_factory->get('iq_hootsuite_api.settings');
     $this->logger = $logger_factory->get('iq_hootsuite_api');
@@ -327,18 +342,41 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
    *   The file to register.
    */
   protected function registerImage(File $image) {
+    $mimeType = $image->getMimeType();
+    $fileUri = $image->getFileUri();
+    $tempFile = NULL;
+
+    // Convert unsupported image formats to a supported one.
+    if (!in_array($mimeType, self::SUPPORTED_MIME_TYPES)) {
+      $converted = $this->convertToSupportedFormat($fileUri, $mimeType);
+      if ($converted === NULL) {
+        $this->logger->error('Could not convert image from @mime to a supported format.', [
+          '@mime' => $mimeType,
+        ]);
+        return FALSE;
+      }
+      $fileUri = $converted['uri'];
+      $mimeType = $converted['mime_type'];
+      $tempFile = $fileUri;
+      $this->logger->notice('Converted image from @original to @target for Hootsuite upload.', [
+        '@original' => $image->getMimeType(),
+        '@target' => $mimeType,
+      ]);
+    }
+
     $body = [
-      'mimeType' => $image->getMimeType(),
-      'sizeBytes' => filesize($image->getFileUri()),
+      'mimeType' => $mimeType,
+      'sizeBytes' => filesize($fileUri),
     ];
     $response = $this->request('post', $this->getEndpointUrl('media'), NULL, $body);
     if (empty($response)) {
+      $this->cleanupTempFile($tempFile);
       return FALSE;
     }
     $data = Json::decode($response);
     if (!empty($data['data']) && $data = $data['data']) {
       $id = $data['id'];
-      if ($this->uploadToAws($image, $data['uploadUrl'])) {
+      if ($this->uploadToAws($fileUri, $mimeType, $data['uploadUrl'])) {
         $i = 0;
         do {
           sleep(1);
@@ -346,10 +384,12 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
           if ($i > 20) {
             $this->messenger->addMessage('Image could not be uploaded, waited for 20 seconds', 'warning');
             $this->logger->warning('Timeout on ready state for image with id @id.', ['@id' => $id]);
+            $this->cleanupTempFile($tempFile);
             return FALSE;
           }
           $response = $this->request('get', $this->getEndpointUrl('media') . '/' . $id);
           if (empty($response)) {
+            $this->cleanupTempFile($tempFile);
             return FALSE;
           }
           $data = Json::decode($response->getContents());
@@ -361,27 +401,31 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
           }
         } while ($state != 'READY');
         $this->logger->notice('Ready state for image id @id.', ['@id' => $id]);
+        $this->cleanupTempFile($tempFile);
         return $id;
       }
     }
+    $this->cleanupTempFile($tempFile);
     return FALSE;
   }
 
   /**
-   * Upload an image to aws.
+   * Upload an image to AWS.
    *
-   * @param \Drupal\file\Entity\File $image
-   *   The file to upload.
+   * @param string $file_uri
+   *   The URI of the file to upload.
+   * @param string $mime_type
+   *   The MIME type of the file.
    * @param string $url
    *   The endpoint to send it to.
    */
-  protected function uploadToAws(File $image, string $url) {
+  protected function uploadToAws(string $file_uri, string $mime_type, string $url) {
     $requestOptions = [
       RequestOptions::HEADERS => [
-        'Content-Type' => $image->getMimeType(),
-        'Content-Length' => filesize($image->getFileUri()),
+        'Content-Type' => $mime_type,
+        'Content-Length' => filesize($file_uri),
       ],
-      RequestOptions::BODY => fopen($image->getFileUri(), 'r'),
+      RequestOptions::BODY => fopen($file_uri, 'r'),
     ];
     try {
       $this->request('put', $url, $requestOptions);
@@ -392,6 +436,121 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
       return FALSE;
     }
     return TRUE;
+  }
+
+  /**
+   * Converts an image to a Hootsuite-supported format.
+   *
+   * Uses PHP's GD library to convert unsupported image types (e.g. WebP, BMP,
+   * TIFF, AVIF) to JPEG or PNG.
+   *
+   * @param string $file_uri
+   *   The URI of the source image.
+   * @param string $original_mime_type
+   *   The original MIME type of the image.
+   *
+   * @return array|null
+   *   An array with 'uri' and 'mime_type' keys for the converted file,
+   *   or NULL if conversion failed.
+   */
+  protected function convertToSupportedFormat(string $file_uri, string $original_mime_type): ?array {
+    if (!extension_loaded('gd')) {
+      $this->logger->error('GD library is not available. Cannot convert image from @mime.', [
+        '@mime' => $original_mime_type,
+      ]);
+      return NULL;
+    }
+
+    $realPath = $this->fileSystem->realpath($file_uri);
+    if (!$realPath || !file_exists($realPath)) {
+      $this->logger->error('File not found for conversion: @uri', ['@uri' => $file_uri]);
+      return NULL;
+    }
+
+    $gdImage = match ($original_mime_type) {
+      'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($realPath) : FALSE,
+      'image/bmp', 'image/x-ms-bmp' => function_exists('imagecreatefrombmp') ? @imagecreatefrombmp($realPath) : FALSE,
+      'image/tiff' => FALSE,
+      'image/avif' => function_exists('imagecreatefromavif') ? @imagecreatefromavif($realPath) : FALSE,
+      default => @imagecreatefromstring(file_get_contents($realPath)),
+    };
+
+    if (!$gdImage) {
+      $this->logger->error('Could not create GD image from @mime file.', [
+        '@mime' => $original_mime_type,
+      ]);
+      return NULL;
+    }
+
+    // Determine target format: use PNG if the image has transparency, JPEG otherwise.
+    $hasAlpha = $this->imageHasTransparency($gdImage);
+    $targetMimeType = $hasAlpha ? 'image/png' : 'image/jpeg';
+    $extension = $hasAlpha ? '.png' : '.jpg';
+
+    $tempDir = $this->fileSystem->getTempDirectory();
+    $tempPath = $tempDir . '/hootsuite_converted_' . uniqid() . $extension;
+
+    $success = FALSE;
+    if ($hasAlpha) {
+      imagesavealpha($gdImage, TRUE);
+      $success = imagepng($gdImage, $tempPath, 9);
+    }
+    else {
+      $success = imagejpeg($gdImage, $tempPath, 90);
+    }
+
+    imagedestroy($gdImage);
+
+    if (!$success || !file_exists($tempPath)) {
+      $this->logger->error('Failed to write converted image to @path.', [
+        '@path' => $tempPath,
+      ]);
+      return NULL;
+    }
+
+    return [
+      'uri' => $tempPath,
+      'mime_type' => $targetMimeType,
+    ];
+  }
+
+  /**
+   * Checks whether a GD image resource has transparency.
+   *
+   * @param \GdImage $image
+   *   The GD image resource.
+   *
+   * @return bool
+   *   TRUE if the image has transparency, FALSE otherwise.
+   */
+  protected function imageHasTransparency(\GdImage $image): bool {
+    $width = imagesx($image);
+    $height = imagesy($image);
+
+    // Sample a subset of pixels for performance on large images.
+    $step = max(1, (int) (($width * $height) / 10000));
+    for ($i = 0; $i < $width * $height; $i += $step) {
+      $x = $i % $width;
+      $y = (int) ($i / $width);
+      $rgba = imagecolorat($image, $x, $y);
+      $alpha = ($rgba >> 24) & 0x7F;
+      if ($alpha > 0) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Cleans up a temporary file if it exists.
+   *
+   * @param string|null $tempFile
+   *   The path to the temporary file, or NULL.
+   */
+  protected function cleanupTempFile(?string $tempFile): void {
+    if ($tempFile !== NULL && file_exists($tempFile)) {
+      @unlink($tempFile);
+    }
   }
 
   /**

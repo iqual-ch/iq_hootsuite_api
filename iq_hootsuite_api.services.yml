@@ -7,3 +7,4 @@ services:
       - '@http_client'
       - '@messenger'
       - '@state'
+      - '@file_system'
