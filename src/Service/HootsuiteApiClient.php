@@ -326,10 +326,10 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
       return $this->images[$image->id()];
     }
     else {
-      $id = $this->registerImage($image);
-      if ($id) {
-        $this->images[$image->id()] = $id;
-        return $id;
+      $data = $this->registerImage($image);
+      if ($data) {
+        $this->images[$image->id()] = $data;
+        return $data;
       }
     }
     return NULL;
@@ -340,6 +340,9 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
    *
    * @param \Drupal\file\Entity\File $image
    *   The file to register.
+   * 
+   * @return mixed
+   *   The media data as array if successful, or FALSE on failure.
    */
   protected function registerImage(File $image) {
     $mimeType = $image->getMimeType();
@@ -398,9 +401,9 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
             $state = '';
           }
         } while ($state != 'READY');
-        $this->logger->notice('Ready state for image id @id.', ['@id' => $id]);
+        $this->logger->notice('Ready state for image id @id, download URL: @url.', ['@id' => $response['data']['id'], '@url' => $response['data']['downloadUrl']]);
         $this->cleanupTempFile($tempFile);
-        return $id;
+        return $response['data'];
       }
     }
     $this->cleanupTempFile($tempFile);
