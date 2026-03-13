@@ -331,7 +331,7 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
       'mimeType' => $image->getMimeType(),
       'sizeBytes' => filesize($image->getFileUri()),
     ];
-    $response = $this->request('post', $this->config->get('url_post_media_endpoint'), NULL, $body);
+    $response = $this->request('post', $this->getEndpointUrl('media'), NULL, $body);
     if (empty($response)) {
       return FALSE;
     }
@@ -348,7 +348,7 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
             $this->logger->warning('Timeout on ready state for image with id @id.', ['@id' => $id]);
             return FALSE;
           }
-          $response = $this->request('get', $this->config->get('url_post_media_endpoint') . '/' . $id);
+          $response = $this->request('get', $this->getEndpointUrl('media') . '/' . $id);
           if (empty($response)) {
             return FALSE;
           }
