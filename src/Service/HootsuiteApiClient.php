@@ -373,8 +373,7 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
       $this->cleanupTempFile($tempFile);
       return FALSE;
     }
-    $data = Json::decode($response);
-    if (!empty($data['data']) && $data = $data['data']) {
+    if (!empty($response['data']) && $data = $response['data']) {
       $id = $data['id'];
       if ($this->uploadToAws($fileUri, $mimeType, $data['uploadUrl'])) {
         $i = 0;
@@ -392,9 +391,8 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
             $this->cleanupTempFile($tempFile);
             return FALSE;
           }
-          $data = Json::decode($response->getContents());
-          if (!empty($data['data']['state'])) {
-            $state = $data['data']['state'];
+          if (!empty($response['data']['state'])) {
+            $state = $response['data']['state'];
           }
           else {
             $state = '';
