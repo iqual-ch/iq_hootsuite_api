@@ -426,7 +426,7 @@ class HootsuiteApiClient implements HootsuiteApiClientInterface {
       RequestOptions::BODY => fopen($file_uri, 'r'),
     ];
     try {
-      $this->request('put', $url, $requestOptions);
+      $this->httpClient->request('put', $url, $requestOptions);
       return TRUE;
     }
     catch (\Exception $e) {
